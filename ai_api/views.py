@@ -32,7 +32,6 @@ def process_ai(request):
         # 4. Make the secure server-to-server request
         url =f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
         headers = {
-            "Authorization": f"Bearer {gemini_api_key}",
             "Content-Type": "application/json"
         }
         payload = {
