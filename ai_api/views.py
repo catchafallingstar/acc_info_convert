@@ -23,12 +23,13 @@ def process_ai(request):
             return JsonResponse({'error': 'Server configuration error: Gemini API Key missing'}, status=500)
 
         # 3. Setup the AI model prompt layout
-        system_prompt = (
-            "You are an expert Web Accessibility specialist. Take the following messy raw text "
-            "extracted from a flowchart/infographic and rebuild it into a logical, sequential text narrative "
-            "for screen readers. Use clean markdown headings, chronological steps, and detailed bullet points. "
-            "CRITICAL: Output ONLY the requested markdown text. Do not include any introductory sentences, "
-            "conversational filler, or concluding remarks like 'Here is the narrative'. Start immediately with the first # heading."
+        system_prompt = ( 
+                         "You are an expert Web Accessibility specialist. Analyze the following raw text extracted from an image. "
+                        "CRITICAL CHECK: If the text is random unreadable garbage, or if it is clearly just a standard block of text "
+                        "(like a book chapter or grocery list) and does NOT look like it came from a flowchart, timeline, diagram, "
+                        "or infographic, respond with EXACTLY this phrase: 'VALIDATION_ERROR: Not a structured infographic.' "
+                        "Otherwise, proceed to rebuild it into a logical, sequential text narrative for screen readers. "
+                        "Use clean markdown headings, chronological steps, and detailed bullet points. Do not include introductory filler."
         )
         full_prompt = f"{system_prompt}\n\nConvert this raw text now:\n\"{raw_text}\""
         # 4. Make the secure server-to-server request
