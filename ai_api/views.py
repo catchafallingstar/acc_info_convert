@@ -1,8 +1,10 @@
 import os
 import json
 import requests
-from django.http import JsonResponse
+import markdown
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from weasyprint import HTML
 
 @csrf_exempt  # Allows your React frontend to POST data to this endpoint
 def process_ai(request):
@@ -70,3 +72,70 @@ def process_ai(request):
 
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+# ==========================================
+# 2. THE ACCESSIBLE PDF GENERATOR ENDPOINT
+# ==========================================
+@csrf_exempt
+def generate_accessible_pdf(request):
+    if request.method == 'POST':
+        # Parse the incoming data from React
+        data = json.loads(request.body)
+        narrative_text = data.get('narrative', '')
+        image_data = data.get('image', '')  # This should be your base64 image string
+
+        # Convert Gemini's Markdown text into Semantic HTML (<p>, <h2>, <ul>)
+        html_content = markdown.markdown(narrative_text)
+
+        # Build a complete HTML document with accessibility attributes
+        full_html = f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Accessible Image Description</title>
+            <style>
+                body {{ font-family: Helvetica, Arial, sans-serif; line-height: 1.6; padding: 2cm; }}
+                h1 {{ font-size: 24px; border-bottom: 2px solid #333; padding-bottom: 10px; }}
+                h2 {{ font-size: 20px; margin-top: 24px; }}
+                h3 {{ font-size: 16px; margin-top: 20px; }}
+                p, li {{ font-size: 12px; }}
+                /* Force the image to start on a brand new page */
+                .image-container {{ page-break-before: always; margin-top: 2cm; }}
+                img {{ max-width: 100%; height: auto; }}
+            </style>
+        </head>
+        <body>
+            <h1>Accessible Image Description</h1>
+            {html_content}
+        """
+
+        # Safely append the original image as an accessible <figure>
+        if image_data:
+            full_html += f"""
+            <div class="image-container">
+                <h2>Original Infographic Source</h2>
+                <hr>
+                <br>
+                <img src="{image_data}" alt="Original uploaded infographic chart">
+            </div>
+            """
+
+        full_html += """
+        </body>
+        </html>
+        """
+
+        # Compile the HTML into a Tagged PDF using the Universal Accessibility (UA) standard
+        pdf_file = HTML(string=full_html).write_pdf(
+            pdf_variant="pdf/ua-1"
+        )
+
+        # Send the PDF file back to the browser
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="Accessible_Narrative.pdf"'
+        
+        return response
+
+    return HttpResponse(status=405) # Method Not Allowed
