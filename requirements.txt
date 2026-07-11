@@ -1,0 +1,6 @@
+Django
+requests
+markdown
+weasyprint
+django-cors-headers
+gunicorn
