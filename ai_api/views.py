@@ -184,7 +184,7 @@ def process_pdf_ai(request):
         full_prompt = f"{system_prompt}\n\nConvert this raw text now:\n\"{extracted_text}\""
         
         # 5. Make the secure server-to-server request
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
         headers = {
             "Content-Type": "application/json"
         }
