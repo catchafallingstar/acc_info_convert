@@ -5,3 +5,4 @@ weasyprint
 django-cors-headers
 gunicorn
 python-dotenv
+pypdf
