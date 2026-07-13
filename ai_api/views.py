@@ -91,16 +91,21 @@ def generate_accessible_pdf(request):
         narrative = data.get('narrative', '')
         base64_file = data.get('image', '')
 
-        # 1. Setup the basic HTML structure for the accessible text
-        html_content = f"""
-        <div style="font-family: sans-serif; padding: 20px;">
-            <h1 style="color: #007bff;">Accessible Description</h1>
-            <pre style="white-space: pre-wrap; font-family: inherit; font-size: 14px;">{narrative}</pre>
-        """
+        # 1. Convert the raw Markdown text from the AI into actual HTML tags!
+        narrative_html = markdown.markdown(narrative)
 
         is_pdf_upload = base64_file.startswith('data:application/pdf')
 
-        # 2. If it's a standard image (JPEG/PNG), embed it directly into the HTML
+        # 2. Setup the HTML structure (Notice we replaced <pre> with a standard <div>)
+        html_content = f"""
+        <div style="font-family: sans-serif; padding: 20px;">
+            <h1 style="color: #007bff;">Accessible Description</h1>
+            <div style="font-size: 14px; line-height: 1.6;">
+                {narrative_html}
+            </div>
+        """
+
+        # 3. If it's a standard image (JPEG/PNG), embed it directly into the HTML
         if base64_file and not is_pdf_upload:
             html_content += f"""
             <hr style="margin: 40px 0;">
@@ -113,31 +118,23 @@ def generate_accessible_pdf(request):
         # Generate the first part of the PDF (The Narrative) using WeasyPrint
         narrative_pdf_bytes = HTML(string=html_content).write_pdf()
 
-        # 3. If it IS a PDF upload, stitch the documents together using pypdf
+        # 4. If it IS a PDF upload, stitch the documents together using pypdf
         if is_pdf_upload:
-            # Strip the "data:application/pdf;base64," header to get the raw string
             header, encoded_string = base64_file.split(',', 1)
             original_pdf_bytes = base64.b64decode(encoded_string)
 
-            # Initialize the PDF merger
             merger = PdfWriter()
-            
-            # Append the newly generated WeasyPrint narrative as the first page(s)
             merger.append(io.BytesIO(narrative_pdf_bytes))
-            
-            # Append the original uploaded PDF at the end
             merger.append(io.BytesIO(original_pdf_bytes))
             
-            # Save the merged result
             output_buffer = io.BytesIO()
             merger.write(output_buffer)
             final_pdf_bytes = output_buffer.getvalue()
             merger.close()
         else:
-            # If it was an image, no merging is needed
             final_pdf_bytes = narrative_pdf_bytes
 
-        # 4. Send the final compiled PDF back to the user's browser
+        # 5. Send the final compiled PDF back to the user's browser
         response = HttpResponse(final_pdf_bytes, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="Accessible_Narrative.pdf"'
         return response
