@@ -37,6 +37,14 @@ def process_ai(request):
             "Otherwise, rebuild it into a logical, sequential text narrative for screen readers. "
             "YOU MUST USE STRICT MARKDOWN SYNTAX. Use '#' for main headings, '##' for subheadings, and '*' or '-' for bullet points. "
             "Do NOT use unicode bullet symbols (•) or plain text numbering for headers. Do not include introductory filler."
+            "If the uploaded image is a flowchart, process mapping, or contains decision points (conditional logic):"
+            "1. DO NOT convert it into a flat, sequential checklist."
+            "2. Identify every decision node (often represented as questions or diamond shapes)."
+            "3. Explicitly map out the branching logic using clear conditional formatting, for example:"
+            "- **Decision Point: [Insert Question/Condition]**"
+                "- *If Yes:* [Insert next step or outcome]"
+                "- *If No:* [Insert next step or outcome]"
+            "4. Ensure the narrative allows a screen-reader user to logically trace every possible path from the 'Start' node to all potential 'End' nodes."
         )
         
         full_prompt = f"{system_prompt}\n\nConvert this raw text now:\n\"{raw_text}\""
@@ -194,6 +202,14 @@ def process_pdf_ai(request):
             "Otherwise, rebuild it into a logical, sequential text narrative for screen readers. "
             "YOU MUST USE STRICT MARKDOWN SYNTAX. Use '#' for main headings, '##' for subheadings, and '*' or '-' for bullet points. "
             "Do NOT use unicode bullet symbols (•) or plain text numbering for headers. Do not include introductory filler."
+            "If the uploaded image is a flowchart, process mapping, or contains decision points (conditional logic):"
+            "1. DO NOT convert it into a flat, sequential checklist."
+            "2. Identify every decision node (often represented as questions or diamond shapes)."
+            "3. Explicitly map out the branching logic using clear conditional formatting, for example:"
+            "- **Decision Point: [Insert Question/Condition]**"
+                "- *If Yes:* [Insert next step or outcome]"
+                "- *If No:* [Insert next step or outcome]"
+            "4. Ensure the narrative allows a screen-reader user to logically trace every possible path from the 'Start' node to all potential 'End' nodes."
         )
         full_prompt = f"{system_prompt}\n\nConvert this raw text now:\n\"{extracted_text}\""
         
