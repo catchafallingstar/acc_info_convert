@@ -5,7 +5,9 @@ import markdown
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from weasyprint import HTML
-import pypdf
+import base64
+import io
+from pypdf import PdfWriter, PdfReader
 
 @csrf_exempt  # Allows your React frontend to POST data to this endpoint
 def process_ai(request):
@@ -80,66 +82,68 @@ def process_ai(request):
 # ==========================================
 @csrf_exempt
 def generate_accessible_pdf(request):
-    if request.method == 'POST':
-        # Parse the incoming data from React
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+
+    try:
         data = json.loads(request.body)
-        narrative_text = data.get('narrative', '')
-        image_data = data.get('image', '')  # This should be your base64 image string
+        narrative = data.get('narrative', '')
+        base64_file = data.get('image', '')
 
-        # Convert Gemini's Markdown text into Semantic HTML (<p>, <h2>, <ul>)
-        html_content = markdown.markdown(narrative_text)
-
-        # Build a complete HTML document with accessibility attributes
-        full_html = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <title>Accessible Image Description</title>
-            <style>
-                body {{ font-family: Helvetica, Arial, sans-serif; line-height: 1.6; padding: 2cm; }}
-                h1 {{ font-size: 24px; border-bottom: 2px solid #333; padding-bottom: 10px; }}
-                h2 {{ font-size: 20px; margin-top: 24px; }}
-                h3 {{ font-size: 16px; margin-top: 20px; }}
-                p, li {{ font-size: 12px; }}
-                /* Force the image to start on a brand new page */
-                .image-container {{ page-break-before: always; margin-top: 2cm; }}
-                img {{ max-width: 100%; height: auto; }}
-            </style>
-        </head>
-        <body>
-            <h1>Accessible Image Description</h1>
-            {html_content}
+        # 1. Setup the basic HTML structure for the accessible text
+        html_content = f"""
+        <div style="font-family: sans-serif; padding: 20px;">
+            <h1 style="color: #007bff;">Accessible Description</h1>
+            <pre style="white-space: pre-wrap; font-family: inherit; font-size: 14px;">{narrative}</pre>
         """
 
-        # Safely append the original image as an accessible <figure>
-        if image_data:
-            full_html += f"""
-            <div class="image-container">
-                <h2>Original Infographic Source</h2>
-                <hr>
-                <br>
-                <img src="{image_data}" alt="Original uploaded infographic chart">
-            </div>
+        is_pdf_upload = base64_file.startswith('data:application/pdf')
+
+        # 2. If it's a standard image (JPEG/PNG), embed it directly into the HTML
+        if base64_file and not is_pdf_upload:
+            html_content += f"""
+            <hr style="margin: 40px 0;">
+            <h2>Original Infographic Source</h2>
+            <img src="{base64_file}" style="max-width: 100%; border: 1px solid #ccc;">
             """
-
-        full_html += """
-        </body>
-        </html>
-        """
-
-        # Compile the HTML into a Tagged PDF using the Universal Accessibility (UA) standard
-        pdf_file = HTML(string=full_html).write_pdf(
-            pdf_variant="pdf/ua-1"
-        )
-
-        # Send the PDF file back to the browser
-        response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="Accessible_Narrative.pdf"'
         
+        html_content += "</div>"
+
+        # Generate the first part of the PDF (The Narrative) using WeasyPrint
+        narrative_pdf_bytes = HTML(string=html_content).write_pdf()
+
+        # 3. If it IS a PDF upload, stitch the documents together using pypdf
+        if is_pdf_upload:
+            # Strip the "data:application/pdf;base64," header to get the raw string
+            header, encoded_string = base64_file.split(',', 1)
+            original_pdf_bytes = base64.b64decode(encoded_string)
+
+            # Initialize the PDF merger
+            merger = PdfWriter()
+            
+            # Append the newly generated WeasyPrint narrative as the first page(s)
+            merger.append(io.BytesIO(narrative_pdf_bytes))
+            
+            # Append the original uploaded PDF at the end
+            merger.append(io.BytesIO(original_pdf_bytes))
+            
+            # Save the merged result
+            output_buffer = io.BytesIO()
+            merger.write(output_buffer)
+            final_pdf_bytes = output_buffer.getvalue()
+            merger.close()
+        else:
+            # If it was an image, no merging is needed
+            final_pdf_bytes = narrative_pdf_bytes
+
+        # 4. Send the final compiled PDF back to the user's browser
+        response = HttpResponse(final_pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="Accessible_Narrative.pdf"'
         return response
 
-    return HttpResponse(status=405) # Method Not Allowed
+    except Exception as e:
+        print(f"Error generating PDF: {e}")
+        return HttpResponse("Server error while generating PDF", status=500)
 
 # ==========================================
 # 3. THE NEW PDF PROCESSING ENDPOINT
