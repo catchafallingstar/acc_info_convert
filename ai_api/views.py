@@ -29,6 +29,7 @@ def process_ai(request):
             return JsonResponse({'error': 'Server configuration error: Gemini API Key missing'}, status=500)
 
         # 3. Setup the AI model prompt layout
+        
         system_prompt = ( 
                          "You are an expert Web Accessibility specialist. Analyze the following raw text extracted from an image. "
                         "CRITICAL CHECK: If the text is random unreadable garbage, or if it is clearly just a standard block of text "
