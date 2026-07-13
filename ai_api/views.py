@@ -30,14 +30,15 @@ def process_ai(request):
 
         # 3. Setup the AI model prompt layout
         
-        system_prompt = ( 
-                         "You are an expert Web Accessibility specialist. Analyze the following raw text extracted from an image. "
-                        "CRITICAL CHECK: If the text is random unreadable garbage, or if it is clearly just a standard block of text "
-                        "(like a book chapter or grocery list) and does NOT look like it came from a flowchart, timeline, diagram, "
-                        "or infographic, respond with EXACTLY this phrase: 'VALIDATION_ERROR: Not a structured infographic.' "
-                        "Otherwise, proceed to rebuild it into a logical, sequential text narrative for screen readers. "
-                        "Use clean markdown headings, chronological steps, and detailed bullet points. Do not include introductory filler."
+        system_prompt = (              
+            "You are an expert Web Accessibility specialist. Analyze the following raw text extracted from an image. "
+            "CRITICAL CHECK: If the text is random unreadable garbage, or if it is clearly just a standard block of text "
+            "and does NOT look like a flowchart, timeline, or infographic, respond with EXACTLY this phrase: 'VALIDATION_ERROR: Not a structured infographic.' "
+            "Otherwise, rebuild it into a logical, sequential text narrative for screen readers. "
+            "YOU MUST USE STRICT MARKDOWN SYNTAX. Use '#' for main headings, '##' for subheadings, and '*' or '-' for bullet points. "
+            "Do NOT use unicode bullet symbols (•) or plain text numbering for headers. Do not include introductory filler."
         )
+        
         full_prompt = f"{system_prompt}\n\nConvert this raw text now:\n\"{raw_text}\""
         # 4. Make the secure server-to-server request
         url =f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
