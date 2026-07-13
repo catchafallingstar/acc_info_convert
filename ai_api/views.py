@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from weasyprint import HTML
 import base64
 import io
+import pypdf
 from pypdf import PdfWriter, PdfReader
 
 @csrf_exempt  # Allows your React frontend to POST data to this endpoint
