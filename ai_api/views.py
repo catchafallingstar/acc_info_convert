@@ -1,14 +1,15 @@
 import os
+import io
 import json
+import base64
 import requests
 import markdown
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from weasyprint import HTML
-import base64
-import io
-from pypdf import PdfWriter, PdfReader
 
+import pypdf 
+from pypdf import PdfWriter, PdfReader
 @csrf_exempt  # Allows your React frontend to POST data to this endpoint
 def process_ai(request):
     if request.method != 'POST':
