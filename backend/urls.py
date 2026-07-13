@@ -16,9 +16,15 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include # Make sure 'include' is imported here
+from django.urls import path, include
+from django.http import HttpResponse
+
+# A simple view to satisfy Render's health checker
+def health_check(request):
+    return HttpResponse("Server is healthy and running!", status=200)
 
 urlpatterns = [
+    path('', health_check),  # Catch-all for the root URL
     path('admin/', admin.site.urls), 
     path('api/', include('ai_api.urls')),
 ]
