@@ -7,7 +7,7 @@ import markdown
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from weasyprint import HTML
-
+import fitz
 import pypdf 
 from pypdf import PdfWriter, PdfReader
 @csrf_exempt  # Allows your React frontend to POST data to this endpoint
@@ -98,7 +98,30 @@ def generate_accessible_pdf(request):
 
         is_pdf_upload = base64_file.startswith('data:application/pdf')
 
-        # 2. Setup the HTML structure (Notice we replaced <pre> with a standard <div>)
+        # 2. Determine the image source for the HTML
+        image_src = ""
+        
+        if is_pdf_upload:
+            # If it's a PDF, extract bytes, render the first page as an image, and convert to base64 PNG
+            header, encoded_string = base64_file.split(',', 1)
+            pdf_bytes = base64.b64decode(encoded_string)
+            
+            # Open PDF with PyMuPDF and grab the first page
+            pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
+            first_page = pdf_document.load_page(0)
+            
+            # Render page to a high-quality image (dpi=150)
+            pix = first_page.get_pixmap(dpi=150)
+            png_bytes = pix.tobytes("png")
+            
+            # Re-encode as a PNG base64 string
+            encoded_png = base64.b64encode(png_bytes).decode('utf-8')
+            image_src = f"data:image/png;base64,{encoded_png}"
+        else:
+            # If it's already an image, use it directly
+            image_src = base64_file
+
+        # 3. Setup the HTML structure
         html_content = f"""
         <div style="font-family: sans-serif; padding: 20px;">
             <h1 style="color: #007bff;">Accessible Description</h1>
@@ -107,40 +130,24 @@ def generate_accessible_pdf(request):
             </div>
         """
 
-        # 3. If it's a standard image (JPEG/PNG), embed it directly into the HTML
-        if base64_file and not is_pdf_upload:
+        # 4. Embed the image (whether originally an image or converted from a PDF)
+        if image_src:
             html_content += f"""
             <hr style="margin: 40px 0;">
             <h2>Original Infographic Source</h2>
-            <img src="{base64_file}" style="max-width: 100%; border: 1px solid #ccc;">
+            <!-- The 'alt' tag here is crucial for screen readers -->
+            <img src="{image_src}" alt="Original infographic document" style="max-width: 100%; border: 1px solid #ccc;">
             """
         
         html_content += "</div>"
 
-        # Generate the first part of the PDF (The Narrative) using WeasyPrint
-        # Update this line to include the accessibility flags
-        narrative_pdf_bytes = HTML(string=html_content).write_pdf(
+        # 5. Generate the final PDF in one pass with WeasyPrint (Tags included!)
+        final_pdf_bytes = HTML(string=html_content).write_pdf(
             pdf_variant="pdf/ua-1", 
             pdf_tags=True
         )
 
-        # 4. If it IS a PDF upload, stitch the documents together using pypdf
-        if is_pdf_upload:
-            header, encoded_string = base64_file.split(',', 1)
-            original_pdf_bytes = base64.b64decode(encoded_string)
-
-            merger = PdfWriter()
-            merger.append(io.BytesIO(narrative_pdf_bytes))
-            merger.append(io.BytesIO(original_pdf_bytes))
-            
-            output_buffer = io.BytesIO()
-            merger.write(output_buffer)
-            final_pdf_bytes = output_buffer.getvalue()
-            merger.close()
-        else:
-            final_pdf_bytes = narrative_pdf_bytes
-
-        # 5. Send the final compiled PDF back to the user's browser
+        # 6. Send the final compiled PDF back to the user's browser
         response = HttpResponse(final_pdf_bytes, content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="Accessible_Narrative.pdf"'
         return response
@@ -148,7 +155,6 @@ def generate_accessible_pdf(request):
     except Exception as e:
         print(f"Error generating PDF: {e}")
         return HttpResponse("Server error while generating PDF", status=500)
-
 # ==========================================
 # 3. THE NEW PDF PROCESSING ENDPOINT
 # ==========================================
