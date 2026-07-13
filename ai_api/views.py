@@ -118,7 +118,11 @@ def generate_accessible_pdf(request):
         html_content += "</div>"
 
         # Generate the first part of the PDF (The Narrative) using WeasyPrint
-        narrative_pdf_bytes = HTML(string=html_content).write_pdf()
+        # Update this line to include the accessibility flags
+        narrative_pdf_bytes = HTML(string=html_content).write_pdf(
+            pdf_variant="pdf/ua-1", 
+            pdf_tags=True
+        )
 
         # 4. If it IS a PDF upload, stitch the documents together using pypdf
         if is_pdf_upload:
