@@ -18,22 +18,25 @@ This server is designed to act as a **secure bridge** between user uploads and a
 
 ---
 
-## ⚙️ How the Backend Works (The 4-Stage Process)
+## ⚙️ How the Backend Works
 
-Our Django environment manages Stages 2, 3, and 4 of the accessibility workflow:
+The platform operates as a cohesive **four-stage processing system** to seamlessly turn inaccessible visuals into screen-reader-friendly documents:
 
-### 1. Data Digitization & OCR (Stage 2)
-Upon receiving a file from the frontend, the backend digitizes the document and scans it using OCR (Optical Character Recognition) to parse all embedded raw text.
+### 1. 📥 User Input & Platform Start (Frontend)
+*   **Upload:** The user uploads an infographic image (PNG, JPG, WEBP) or an inaccessible PDF.
+*   **Validation:** The frontend interface instantly validates the file type and registers it for processing.
 
-### 2. Intelligent AI Reconstruction (Stage 3)
-The backend securely sends the raw OCR data and structural cues to the AI model.
-*   **Complex Flowchart/Decision Tree Support:** The system instructs the model to identify conditional shapes (like diamond decision points) and map them out into strict, navigable logical loops (e.g., *If Yes, do X; If No, do Y*) instead of flattening the text.
-*   **Logical Outlining:** The AI determines proper heading structures ($H_1, H_2$, etc.) and writes a clean chronological narrative of the graphic.
+### 2. 🔒 Secure Transit & Text Extraction (Backend)
+*   **Encrypted Dispatch:** The file is safely dispatched over an encrypted HTTPS connection to our Django backend.
+*   **OCR Parsing:** The backend parses the file and executes OCR (Optical Character Recognition) to extract the raw embedded text.
 
-### 3. Accessible PDF Generation (Stage 4)
-The backend compiles a brand new PDF with the following screen-reader-optimized layout:
-*   **Page 1:** Contains the comprehensive, structured, and bulleted text description of the infographic.
-*   **Page 2+:** Houses the original graph tagged with structured alt-text describing the image for screen-reader engines.
+### 3. 🧠 Intelligent AI Reconstruction (Backend - Silent)
+*   **Contextual Prompting:** The backend securely prompts the AI (such as the U-M GPT Toolkit) with the extracted raw text and custom structural rules.
+*   **Logical Analysis:** The AI dynamically analyzes the layout, converting complex visuals (like flowchart decision trees or timelines) into logical, descriptive prose instead of flattening them into a confusing list of words.
+
+### 4. 📄 Accessible PDF Generation & Delivery (Frontend/Backend)
+*   **PDF Compilation:** The backend compiles a clean, tagged PDF featuring the logical text description on Page 1, and the original graphic (safely tagged with alt-text) on Page 2.
+*   **Polished Interface:** The frontend receives the completed document and displays a polished, high-contrast, UM-themed download button for the user.
 
 ---
 
