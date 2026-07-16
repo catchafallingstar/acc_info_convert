@@ -4,36 +4,36 @@
 [![AI Engine](https://img.shields.io/badge/AI_Engine-U--M_GPT_Toolkit-00274C?style=flat-square)](https://its.umich.edu/)
 [![Security](https://img.shields.io/badge/Security-Protected_Bridge-success?style=flat-square)](#)
 
-The secure, robust backend engine for the Accessible Infographic Converter. This Django application acts as a secure processing gateway, extracting visual content, executing optical character recognition (OCR), prompting advanced AI models for descriptive narratives, and outputting highly structured, screen-reader-compliant PDF files[cite: 1].
+The secure, robust backend engine for the Accessible Infographic Converter. This Django application acts as a secure processing gateway, extracting visual content, executing optical character recognition (OCR), prompting advanced AI models for descriptive narratives, and outputting highly structured, screen-reader-compliant PDF files.
 
 ---
 
 ## 🔒 Security & Backend Architecture
 
-This server is designed to act as a **secure bridge** between user uploads and artificial intelligence APIs[cite: 1]:
+This server is designed to act as a **secure bridge** between user uploads and artificial intelligence APIs:
 
-*   **API Token Obfuscation:** Under no circumstances are raw API credentials exposed to client browsers[cite: 1]. All validation, handshakes, and secret keys are stored safely on the environment layer behind Django[cite: 1].
-*   **Secure Pipelines:** Documents uploaded by users are packaged securely and dispatched through protected connections[cite: 1].
+*   **API Token Obfuscation:** Under no circumstances are raw API credentials exposed to client browsers. All validation, handshakes, and secret keys are stored safely on the environment layer behind Django.
+*   **Secure Pipelines:** Documents uploaded by users are packaged securely and dispatched through protected connections.
 *   **Compliance Ready:** Specifically built to easily shift from private sandbox keys to the **U-M GPT Toolkit** (ITS) to guarantee compliance with University of Michigan data security policies.
 
 ---
 
 ## ⚙️ How the Backend Works (The 4-Stage Process)
 
-Our Django environment manages Stages 2, 3, and 4 of the accessibility workflow[cite: 1]:
+Our Django environment manages Stages 2, 3, and 4 of the accessibility workflow:
 
 ### 1. Data Digitization & OCR (Stage 2)
-Upon receiving a file from the frontend, the backend digitizes the document and scans it using OCR (Optical Character Recognition) to parse all embedded raw text[cite: 1].
+Upon receiving a file from the frontend, the backend digitizes the document and scans it using OCR (Optical Character Recognition) to parse all embedded raw text.
 
 ### 2. Intelligent AI Reconstruction (Stage 3)
-The backend securely sends the raw OCR data and structural cues to the AI model[cite: 1].
+The backend securely sends the raw OCR data and structural cues to the AI model.
 *   **Complex Flowchart/Decision Tree Support:** The system instructs the model to identify conditional shapes (like diamond decision points) and map them out into strict, navigable logical loops (e.g., *If Yes, do X; If No, do Y*) instead of flattening the text.
-*   **Logical Outlining:** The AI determines proper heading structures ($H_1, H_2$, etc.) and writes a clean chronological narrative of the graphic[cite: 1].
+*   **Logical Outlining:** The AI determines proper heading structures ($H_1, H_2$, etc.) and writes a clean chronological narrative of the graphic.
 
 ### 3. Accessible PDF Generation (Stage 4)
-The backend compiles a brand new PDF with the following screen-reader-optimized layout[cite: 1]:
-*   **Page 1:** Contains the comprehensive, structured, and bulleted text description of the infographic[cite: 1].
-*   **Page 2+:** Houses the original graph tagged with structured alt-text describing the image for screen-reader engines[cite: 1].
+The backend compiles a brand new PDF with the following screen-reader-optimized layout:
+*   **Page 1:** Contains the comprehensive, structured, and bulleted text description of the infographic.
+*   **Page 2+:** Houses the original graph tagged with structured alt-text describing the image for screen-reader engines.
 
 ---
 
