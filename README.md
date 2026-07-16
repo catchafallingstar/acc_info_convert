@@ -43,7 +43,7 @@ The platform operates as a cohesive **four-stage processing system** to seamless
 ## 🛠️ Tech Stack
 *   **Framework:** Django (Python)
 *   **OCR Engine:** Tesseract OCR / PyPDF
-*   **AI Integrations:** U-M GPT Toolkit / OpenAI API
+*   **AI Integrations:** U-M GPT Toolkit / Gemini API
 *   **PDF Compiler:** ReportLab / Weasyprint
 
 ---
